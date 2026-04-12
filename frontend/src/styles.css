@@ -208,15 +208,17 @@ body {
 }
 
 .korp-badge.aberta {
-  background: #fef3c7;
-  color: #b45309;
-  border-left: 3px solid var(--warning-light);
+  background: rgba(21, 128, 61, 0.1);
+  color: var(--success);
+  border-left: 3px solid var(--success);
+  font-weight: 700;
 }
 
 .korp-badge.fechada {
-  background: var(--success-bg);
-  color: var(--success);
-  border-left: 3px solid var(--success);
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border-left: 3px solid #6b7280;
+  font-weight: 700;
 }
 
 /* ---- Form States ---- */
@@ -270,26 +272,40 @@ input:focus, textarea:focus, select:focus {
   pointer-events: none;
 }
 
+/* Botão de imprimir - Verde destacado */
+.btn-imprimir {
+  background-color: var(--success) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: 0 2px 4px rgb(21 128 61 / 0.2) !important;
+  transition: all var(--transition) !important;
+}
+
+.btn-imprimir:hover:not(:disabled) {
+  background-color: #129946 !important;
+  box-shadow: 0 8px 16px rgb(21 128 61 / 0.3) !important;
+  transform: translateY(-2px);
+}
+
+.btn-imprimir:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-imprimir:disabled {
+  background-color: #cbd5e1 !important;
+  opacity: 0.7;
+}
+
 /* ---- Loading Spinner ---- */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(2px);
   z-index: 1000;
-  animation: fadeIn var(--transition-fast);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.loading-spinner {
-  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -304,6 +320,20 @@ input:focus, textarea:focus, select:focus {
 
 .slide-up {
   animation: slideUp var(--transition) both;
+}
+
+/* Label "Concluída" para notas fechadas */
+.fechada-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 @keyframes slideUp {

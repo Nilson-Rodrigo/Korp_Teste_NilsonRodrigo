@@ -54,35 +54,27 @@ export class Produtos implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.carregar();
-    // Subscrever a mudanças de estado
-    this.stateService.produtos$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((produtos) => {
-        this.produtos = produtos;
-      });
   }
 
   carregar() {
     this.carregando = true;
-    this.stateService.setCarregandoProdutos(true);
+    console.log('Iniciando carregamento de produtos...');
     
     this.produtoService.listar()
-      .pipe(
-        catchError(() => {
-          this.snackBar.open('Serviço de estoque indisponível. Tente novamente.', 'Fechar', {
+      .subscribe({
+        next: (data) => {
+          console.log('✓ Produtos carregados:', data);
+          this.produtos = data;
+          this.carregando = false;
+        },
+        error: (err) => {
+          console.error('✗ Erro ao carregar:', err);
+          this.carregando = false;
+          this.snackBar.open('Erro ao carregar produtos', 'Fechar', {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          return of([]);
-        }),
-        finalize(() => {
-          this.carregando = false;
-          this.stateService.setCarregandoProdutos(false);
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((data) => {
-        this.stateService.setProdutos(data);
+        }
       });
   }
 

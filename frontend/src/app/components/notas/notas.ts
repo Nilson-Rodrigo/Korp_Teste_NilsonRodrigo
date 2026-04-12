@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
-import { catchError, finalize, debounceTime, Subject, takeUntil } from 'rxjs';
+import { catchError, finalize, Subject, takeUntil } from 'rxjs';
 import { of } from 'rxjs';
 import { NotaService, NotaFiscal, ItemNota } from '../../services/nota';
 import { ProdutoService, Produto } from '../../services/produto';
@@ -54,9 +54,6 @@ export class Notas implements OnInit, OnDestroy {
   salvando = false;
   carregando = true;
 
-  // Auto-refresh
-  private refreshSubject = new Subject<void>();
-
   // Cleanup subscriptions
   private destroy$ = new Subject<void>();
 
@@ -69,74 +66,48 @@ export class Notas implements OnInit, OnDestroy {
 
   // Ciclo de vida: OnInit
   ngOnInit() {
-    this.carregarNotas();
+    console.log('Iniciando carregamento de notas e produtos...');
     this.carregarProdutos();
-
-    // Subscrever a mudanças de estado (sincronização)
-    this.stateService.notas$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((notas) => {
-        this.notas = notas;
-      });
-
-    this.stateService.produtos$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((produtos) => {
-        this.produtos = produtos;
-      });
-
-    // Auto-refresh a cada 30 segundos
-    this.refreshSubject.pipe(
-      debounceTime(30000),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      this.carregarNotas();
-      this.carregarProdutos();
-    });
+    this.carregarNotas();
   }
 
   carregarProdutos() {
+    console.log('Carregando produtos...');
     this.produtoService.listar()
-      .pipe(
-        catchError(() => {
-          this.snackBar.open('Erro ao carregar lista de produtos. Tente novamente.', 'Fechar', {
+      .subscribe({
+        next: (data) => {
+          console.log('✓ Produtos carregados:', data);
+          this.produtos = data;
+        },
+        error: (err) => {
+          console.error('✗ Erro ao carregar produtos:', err);
+          this.snackBar.open('Erro ao carregar produtos', 'Fechar', {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          return of([]);
-        }),
-        finalize(() => {
-          this.stateService.setCarregandoProdutos(false);
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((data) => {
-        this.stateService.setProdutos(data);
-        this.refreshSubject.next();
+        }
       });
   }
 
   carregarNotas() {
+    console.log('Carregando notas...');
     this.carregando = true;
-    this.stateService.setCarregandoNotas(true);
 
     this.notaService.listar()
-      .pipe(
-        catchError(() => {
-          this.snackBar.open('Serviço de faturamento indisponível. Tente novamente.', 'Fechar', {
+      .subscribe({
+        next: (data) => {
+          console.log('✓ Notas carregadas:', data);
+          this.notas = data;
+          this.carregando = false;
+        },
+        error: (err) => {
+          console.error('✗ Erro ao carregar notas:', err);
+          this.carregando = false;
+          this.snackBar.open('Erro ao carregar notas', 'Fechar', {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          return of([]);
-        }),
-        finalize(() => {
-          this.carregando = false;
-          this.stateService.setCarregandoNotas(false);
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((data) => {
-        this.stateService.setNotas(data);
+        }
       });
   }
 
