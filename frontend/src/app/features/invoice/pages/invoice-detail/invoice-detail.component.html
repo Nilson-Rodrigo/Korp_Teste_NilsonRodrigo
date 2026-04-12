@@ -1,0 +1,78 @@
+<div class="korp-page">
+  <div class="page-header">
+    <a routerLink="/faturamento" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5m0 0l7 7m-7-7l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Voltar ao faturamento
+    </a>
+  </div>
+
+  <div *ngIf="carregando" class="loading-state">
+    <p>Carregando nota...</p>
+  </div>
+
+  <mat-card *ngIf="!carregando && nota" class="detail-card">
+    <mat-card-header>
+      <div class="card-header-content">
+        <div class="card-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <mat-card-title>NF #{{ nota.numero }}</mat-card-title>
+          <p class="card-subtitle">
+            <span class="korp-badge" [ngClass]="nota.status === 'Aberta' ? 'aberta' : 'fechada'">
+              <span class="badge-dot" [ngClass]="nota.status === 'Aberta' ? 'dot-blue' : 'dot-gray'"></span>
+              {{ nota.status }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content class="detail-content">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">ID</span>
+          <span class="detail-value mono">{{ nota.id }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Número</span>
+          <span class="detail-value">{{ nota.numero }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Criado em</span>
+          <span class="detail-value">{{ nota.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Atualizado em</span>
+          <span class="detail-value">{{ nota.atualizado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="itens-section">
+        <h3 class="section-title">Itens ({{ (nota.itens || []).length }})</h3>
+        <div class="itens-lista">
+          <div class="item-chip" *ngFor="let item of nota.itens">
+            <div class="item-chip-info">
+              <span class="item-chip-nome">{{ nomeProduto(item.produto_id) }}</span>
+              <span class="item-chip-qty">{{ item.quantidade }} un.</span>
+            </div>
+          </div>
+          <div *ngIf="!nota.itens || nota.itens.length === 0" class="empty-itens">
+            <p>Nenhum item nesta nota.</p>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions class="detail-actions" *ngIf="nota.status === 'Aberta'">
+      <button mat-raised-button color="accent" (click)="imprimir()" [disabled]="imprimindo">
+        <mat-spinner *ngIf="imprimindo" diameter="16" style="display:inline-block; margin-right: 6px"></mat-spinner>
+        {{ imprimindo ? 'Processando...' : 'Imprimir Nota' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
