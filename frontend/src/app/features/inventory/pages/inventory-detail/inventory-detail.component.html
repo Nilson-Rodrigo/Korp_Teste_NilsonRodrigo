@@ -1,0 +1,68 @@
+<div class="korp-page">
+  <div class="page-header">
+    <a routerLink="/estoque" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5m0 0l7 7m-7-7l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Voltar ao estoque
+    </a>
+  </div>
+
+  <div *ngIf="carregando" class="loading-state">
+    <p>Carregando produto...</p>
+  </div>
+
+  <mat-card *ngIf="!carregando && produto" class="detail-card">
+    <mat-card-header>
+      <div class="card-header-content">
+        <div class="card-icon blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <mat-card-title>{{ produto.descricao }}</mat-card-title>
+          <p class="card-subtitle">Código: {{ produto.codigo }}</p>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content class="detail-content">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">ID</span>
+          <span class="detail-value mono">{{ produto.id }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Código</span>
+          <span class="detail-value">{{ produto.codigo }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Saldo atual</span>
+          <span class="detail-value saldo" [class.low]="produto.saldo <= 5">{{ produto.saldo }} un.</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Criado em</span>
+          <span class="detail-value">{{ produto.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Atualizado em</span>
+          <span class="detail-value">{{ produto.atualizado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="saldo-form">
+        <h3 class="form-title">Atualizar Saldo</h3>
+        <div class="saldo-row">
+          <mat-form-field appearance="outline" class="saldo-field">
+            <mat-label>Novo saldo</mat-label>
+            <input matInput type="number" [(ngModel)]="novoSaldo" min="0" />
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="atualizarSaldo()" [disabled]="salvando">
+            {{ salvando ? 'Salvando...' : 'Atualizar' }}
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
