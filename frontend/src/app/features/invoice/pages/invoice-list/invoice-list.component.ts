@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -40,17 +40,18 @@ export class InvoiceListComponent implements OnInit {
   private invoiceService = inject(InvoiceService);
   private inventoryService = inject(InventoryService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
-  notas: NotaFiscal[] = [];
-  produtos: Produto[] = [];
+  notas = signal<NotaFiscal[]>([]);
+  produtos = signal<Produto[]>([]);
   displayedColumns = ['numero', 'status', 'itens', 'acoes'];
 
   novoItem: ItemNota = { produto_id: '', quantidade: 1 };
-  itens: ItemNota[] = [];
+  itens = signal<ItemNota[]>([]);
 
-  imprimindo: string | null = null;
-  salvando = false;
-  carregando = true;
+  imprimindo = signal<string | null>(null);
+  salvando = signal(false);
+  carregando = signal(true);
 
   ngOnInit(): void {
     this.carregarNotas();
@@ -69,11 +70,14 @@ export class InvoiceListComponent implements OnInit {
           return of([]);
         })
       )
-      .subscribe((data) => (this.produtos = data));
+      .subscribe((data) => {
+        this.produtos.set(data);
+        this.cdr.markForCheck();
+      });
   }
 
   carregarNotas(): void {
-    this.carregando = true;
+    this.carregando.set(true);
     this.invoiceService
       .listar()
       .pipe(
@@ -82,18 +86,19 @@ export class InvoiceListComponent implements OnInit {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          this.carregando = false;
+          this.carregando.set(false);
           return of([]);
         })
       )
       .subscribe((data) => {
-        this.notas = data;
-        this.carregando = false;
+        this.notas.set(data);
+        this.carregando.set(false);
+        this.cdr.markForCheck();
       });
   }
 
   nomeProduto(id: string): string {
-    const p = this.produtos.find((x) => x.id === id);
+    const p = this.produtos().find((x) => x.id === id);
     return p ? `${p.codigo} — ${p.descricao}` : `Produto #${id}`;
   }
 
@@ -105,7 +110,7 @@ export class InvoiceListComponent implements OnInit {
       });
       return;
     }
-    const duplicado = this.itens.find((i) => i.produto_id === this.novoItem.produto_id);
+    const duplicado = this.itens().find((i) => i.produto_id === this.novoItem.produto_id);
     if (duplicado) {
       this.snackBar.open('Este produto já foi adicionado à nota.', 'Fechar', {
         duration: 3000,
@@ -113,25 +118,25 @@ export class InvoiceListComponent implements OnInit {
       });
       return;
     }
-    this.itens.push({ ...this.novoItem });
+    this.itens.update(current => [...current, { ...this.novoItem }]);
     this.novoItem = { produto_id: '', quantidade: 1 };
   }
 
   removerItem(index: number): void {
-    this.itens.splice(index, 1);
+    this.itens.update(current => current.filter((_, i) => i !== index));
   }
 
   salvar(): void {
-    if (this.itens.length === 0) {
+    if (this.itens().length === 0) {
       this.snackBar.open('Adicione pelo menos um produto à nota.', 'Fechar', {
         duration: 3000,
         panelClass: 'snack-error',
       });
       return;
     }
-    this.salvando = true;
+    this.salvando.set(true);
     this.invoiceService
-      .criar({ itens: this.itens })
+      .criar({ itens: this.itens() })
       .pipe(
         catchError((err) => {
           const msg = err.error?.erro || 'Erro ao criar nota fiscal.';
@@ -139,25 +144,25 @@ export class InvoiceListComponent implements OnInit {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          this.salvando = false;
+          this.salvando.set(false);
           return of(null);
         })
       )
       .subscribe((res) => {
         if (res) {
-          this.itens = [];
+          this.itens.set([]);
           this.carregarNotas();
           this.snackBar.open('Nota fiscal criada com sucesso!', 'OK', {
             duration: 3000,
             panelClass: 'snack-success',
           });
         }
-        this.salvando = false;
+        this.salvando.set(false);
       });
   }
 
   imprimir(id: string): void {
-    this.imprimindo = id;
+    this.imprimindo.set(id);
     this.invoiceService
       .imprimir(id)
       .pipe(
@@ -167,7 +172,7 @@ export class InvoiceListComponent implements OnInit {
             duration: 6000,
             panelClass: 'snack-error',
           });
-          this.imprimindo = null;
+          this.imprimindo.set(null);
           return of(null);
         })
       )
@@ -180,7 +185,7 @@ export class InvoiceListComponent implements OnInit {
             panelClass: 'snack-success',
           });
         }
-        this.imprimindo = null;
+        this.imprimindo.set(null);
       });
   }
 }

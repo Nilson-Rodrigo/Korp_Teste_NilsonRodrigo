@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -33,11 +33,12 @@ export class InventoryDetailComponent implements OnInit {
   private router = inject(Router);
   private inventoryService = inject(InventoryService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
-  produto: Produto | null = null;
-  carregando = true;
+  produto = signal<Produto | null>(null);
+  carregando = signal(true);
   novoSaldo = 0;
-  salvando = false;
+  salvando = signal(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -47,7 +48,7 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   carregar(id: string): void {
-    this.carregando = true;
+    this.carregando.set(true);
     this.inventoryService
       .buscarPorId(id)
       .pipe(
@@ -58,34 +59,36 @@ export class InventoryDetailComponent implements OnInit {
         })
       )
       .subscribe((data) => {
-        this.produto = data;
+        this.produto.set(data);
         if (data) {
           this.novoSaldo = data.saldo;
         }
-        this.carregando = false;
+        this.carregando.set(false);
+        this.cdr.markForCheck();
       });
   }
 
   atualizarSaldo(): void {
-    if (!this.produto || this.novoSaldo < 0) return;
+    const p = this.produto();
+    if (!p || this.novoSaldo < 0) return;
 
-    this.salvando = true;
+    this.salvando.set(true);
     this.inventoryService
-      .atualizarSaldo(this.produto.id, this.novoSaldo)
+      .atualizarSaldo(p.id, this.novoSaldo)
       .pipe(
         catchError((err) => {
           const msg = err.error?.erro || 'Erro ao atualizar saldo.';
           this.snackBar.open(msg, 'Fechar', { duration: 5000, panelClass: 'snack-error' });
-          this.salvando = false;
+          this.salvando.set(false);
           return of(null);
         })
       )
       .subscribe((res) => {
         if (res !== null) {
           this.snackBar.open('Saldo atualizado com sucesso!', 'OK', { duration: 3000, panelClass: 'snack-success' });
-          this.carregar(this.produto!.id);
+          this.carregar(p.id);
         }
-        this.salvando = false;
+        this.salvando.set(false);
       });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -32,11 +32,12 @@ export class InvoiceDetailComponent implements OnInit {
   private invoiceService = inject(InvoiceService);
   private inventoryService = inject(InventoryService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
-  nota: NotaFiscal | null = null;
-  produtos: Produto[] = [];
-  carregando = true;
-  imprimindo = false;
+  nota = signal<NotaFiscal | null>(null);
+  produtos = signal<Produto[]>([]);
+  carregando = signal(true);
+  imprimindo = signal(false);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -47,7 +48,7 @@ export class InvoiceDetailComponent implements OnInit {
   }
 
   carregar(id: string): void {
-    this.carregando = true;
+    this.carregando.set(true);
     this.invoiceService
       .buscarPorId(id)
       .pipe(
@@ -58,8 +59,9 @@ export class InvoiceDetailComponent implements OnInit {
         })
       )
       .subscribe((data) => {
-        this.nota = data;
-        this.carregando = false;
+        this.nota.set(data);
+        this.carregando.set(false);
+        this.cdr.markForCheck();
       });
   }
 
@@ -67,33 +69,37 @@ export class InvoiceDetailComponent implements OnInit {
     this.inventoryService
       .listar()
       .pipe(catchError(() => of([])))
-      .subscribe((data) => (this.produtos = data));
+      .subscribe((data) => {
+        this.produtos.set(data);
+        this.cdr.markForCheck();
+      });
   }
 
   nomeProduto(id: string): string {
-    const p = this.produtos.find((x) => x.id === id);
+    const p = this.produtos().find((x) => x.id === id);
     return p ? `${p.codigo} — ${p.descricao}` : `Produto #${id}`;
   }
 
   imprimir(): void {
-    if (!this.nota) return;
-    this.imprimindo = true;
+    const n = this.nota();
+    if (!n) return;
+    this.imprimindo.set(true);
     this.invoiceService
-      .imprimir(this.nota.id)
+      .imprimir(n.id)
       .pipe(
         catchError((err) => {
           const msg = err.error?.erro || 'Erro ao imprimir nota.';
           this.snackBar.open(msg, 'Fechar', { duration: 5000, panelClass: 'snack-error' });
-          this.imprimindo = false;
+          this.imprimindo.set(false);
           return of(null);
         })
       )
       .subscribe((res) => {
         if (res !== null) {
           this.snackBar.open('Nota impressa com sucesso!', 'OK', { duration: 3000, panelClass: 'snack-success' });
-          this.carregar(this.nota!.id);
+          this.carregar(n.id);
         }
-        this.imprimindo = false;
+        this.imprimindo.set(false);
       });
   }
 }

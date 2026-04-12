@@ -8,11 +8,11 @@
     </a>
   </div>
 
-  <div *ngIf="carregando" class="loading-state">
+  <div *ngIf="carregando()" class="loading-state">
     <p>Carregando produto...</p>
   </div>
 
-  <mat-card *ngIf="!carregando && produto" class="detail-card">
+  <mat-card *ngIf="!carregando() && produto()" class="detail-card">
     <mat-card-header>
       <div class="card-header-content">
         <div class="card-icon blue">
@@ -21,8 +21,8 @@
           </svg>
         </div>
         <div>
-          <mat-card-title>{{ produto.descricao }}</mat-card-title>
-          <p class="card-subtitle">Código: {{ produto.codigo }}</p>
+          <mat-card-title>{{ produto()!.descricao }}</mat-card-title>
+          <p class="card-subtitle">Código: {{ produto()!.codigo }}</p>
         </div>
       </div>
     </mat-card-header>
@@ -31,23 +31,23 @@
       <div class="detail-grid">
         <div class="detail-item">
           <span class="detail-label">ID</span>
-          <span class="detail-value mono">{{ produto.id }}</span>
+          <span class="detail-value mono">{{ produto()!.id }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Código</span>
-          <span class="detail-value">{{ produto.codigo }}</span>
+          <span class="detail-value">{{ produto()!.codigo }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Saldo atual</span>
-          <span class="detail-value saldo" [class.low]="produto.saldo <= 5">{{ produto.saldo }} un.</span>
+          <span class="detail-value saldo" [class.low]="produto()!.saldo <= 5">{{ produto()!.saldo }} un.</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Criado em</span>
-          <span class="detail-value">{{ produto.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="detail-value">{{ produto()!.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Atualizado em</span>
-          <span class="detail-value">{{ produto.atualizado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="detail-value">{{ produto()!.atualizado_em | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
       </div>
 
@@ -58,8 +58,8 @@
             <mat-label>Novo saldo</mat-label>
             <input matInput type="number" [(ngModel)]="novoSaldo" min="0" />
           </mat-form-field>
-          <button mat-raised-button color="primary" (click)="atualizarSaldo()" [disabled]="salvando">
-            {{ salvando ? 'Salvando...' : 'Atualizar' }}
+          <button mat-raised-button color="primary" (click)="atualizarSaldo()" [disabled]="salvando()">
+            {{ salvando() ? 'Salvando...' : 'Atualizar' }}
           </button>
         </div>
       </div>

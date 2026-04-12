@@ -8,11 +8,11 @@
     </a>
   </div>
 
-  <div *ngIf="carregando" class="loading-state">
+  <div *ngIf="carregando()" class="loading-state">
     <p>Carregando nota...</p>
   </div>
 
-  <mat-card *ngIf="!carregando && nota" class="detail-card">
+  <mat-card *ngIf="!carregando() && nota()" class="detail-card">
     <mat-card-header>
       <div class="card-header-content">
         <div class="card-icon blue">
@@ -21,11 +21,11 @@
           </svg>
         </div>
         <div>
-          <mat-card-title>NF #{{ nota.numero }}</mat-card-title>
+          <mat-card-title>NF #{{ nota()!.numero }}</mat-card-title>
           <p class="card-subtitle">
-            <span class="korp-badge" [ngClass]="nota.status === 'Aberta' ? 'aberta' : 'fechada'">
-              <span class="badge-dot" [ngClass]="nota.status === 'Aberta' ? 'dot-blue' : 'dot-gray'"></span>
-              {{ nota.status }}
+            <span class="korp-badge" [ngClass]="nota()!.status === 'Aberta' ? 'aberta' : 'fechada'">
+              <span class="badge-dot" [ngClass]="nota()!.status === 'Aberta' ? 'dot-blue' : 'dot-gray'"></span>
+              {{ nota()!.status }}
             </span>
           </p>
         </div>
@@ -36,42 +36,42 @@
       <div class="detail-grid">
         <div class="detail-item">
           <span class="detail-label">ID</span>
-          <span class="detail-value mono">{{ nota.id }}</span>
+          <span class="detail-value mono">{{ nota()!.id }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Número</span>
-          <span class="detail-value">{{ nota.numero }}</span>
+          <span class="detail-value">{{ nota()!.numero }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Criado em</span>
-          <span class="detail-value">{{ nota.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="detail-value">{{ nota()!.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Atualizado em</span>
-          <span class="detail-value">{{ nota.atualizado_em | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="detail-value">{{ nota()!.atualizado_em | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
       </div>
 
       <div class="itens-section">
-        <h3 class="section-title">Itens ({{ (nota.itens || []).length }})</h3>
+        <h3 class="section-title">Itens ({{ (nota()!.itens || []).length }})</h3>
         <div class="itens-lista">
-          <div class="item-chip" *ngFor="let item of nota.itens">
+          <div class="item-chip" *ngFor="let item of nota()!.itens">
             <div class="item-chip-info">
               <span class="item-chip-nome">{{ nomeProduto(item.produto_id) }}</span>
               <span class="item-chip-qty">{{ item.quantidade }} un.</span>
             </div>
           </div>
-          <div *ngIf="!nota.itens || nota.itens.length === 0" class="empty-itens">
+          <div *ngIf="!nota()!.itens || nota()!.itens.length === 0" class="empty-itens">
             <p>Nenhum item nesta nota.</p>
           </div>
         </div>
       </div>
     </mat-card-content>
 
-    <mat-card-actions class="detail-actions" *ngIf="nota.status === 'Aberta'">
-      <button mat-raised-button color="accent" (click)="imprimir()" [disabled]="imprimindo">
-        <mat-spinner *ngIf="imprimindo" diameter="16" style="display:inline-block; margin-right: 6px"></mat-spinner>
-        {{ imprimindo ? 'Processando...' : 'Imprimir Nota' }}
+    <mat-card-actions class="detail-actions" *ngIf="nota()!.status === 'Aberta'">
+      <button mat-raised-button color="accent" (click)="imprimir()" [disabled]="imprimindo()">
+        <mat-spinner *ngIf="imprimindo()" diameter="16" style="display:inline-block; margin-right: 6px"></mat-spinner>
+        {{ imprimindo() ? 'Processando...' : 'Imprimir Nota' }}
       </button>
     </mat-card-actions>
   </mat-card>

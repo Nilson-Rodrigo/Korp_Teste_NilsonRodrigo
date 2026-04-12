@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -33,11 +33,12 @@ import { Produto, CriarProdutoInput } from '../../models/inventory.model';
 export class InventoryListComponent implements OnInit {
   private inventoryService = inject(InventoryService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
-  produtos: Produto[] = [];
+  produtos = signal<Produto[]>([]);
   displayedColumns = ['codigo', 'descricao', 'saldo'];
-  salvando = false;
-  carregando = true;
+  salvando = signal(false);
+  carregando = signal(true);
 
   novoProduto: CriarProdutoInput = { codigo: '', descricao: '', saldo: 0 };
 
@@ -46,7 +47,7 @@ export class InventoryListComponent implements OnInit {
   }
 
   carregar(): void {
-    this.carregando = true;
+    this.carregando.set(true);
     this.inventoryService
       .listar()
       .pipe(
@@ -59,8 +60,9 @@ export class InventoryListComponent implements OnInit {
         })
       )
       .subscribe((data) => {
-        this.produtos = data;
-        this.carregando = false;
+        this.produtos.set(data);
+        this.carregando.set(false);
+        this.cdr.markForCheck();
       });
   }
 
@@ -80,7 +82,7 @@ export class InventoryListComponent implements OnInit {
       return;
     }
 
-    this.salvando = true;
+    this.salvando.set(true);
     this.inventoryService
       .criar(this.novoProduto)
       .pipe(
@@ -90,7 +92,7 @@ export class InventoryListComponent implements OnInit {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          this.salvando = false;
+          this.salvando.set(false);
           return of(null);
         })
       )
@@ -103,7 +105,7 @@ export class InventoryListComponent implements OnInit {
             panelClass: 'snack-success',
           });
         }
-        this.salvando = false;
+        this.salvando.set(false);
       });
   }
 }

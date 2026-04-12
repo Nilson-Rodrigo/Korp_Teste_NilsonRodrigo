@@ -6,10 +6,14 @@ estoque/estoque
 estoque/estoque.exe
 faturamento/faturamento
 faturamento/faturamento.exe
+backend/backend
+backend/backend.exe
+backend/cmd/main
 
 # Variáveis de ambiente (contêm senhas!)
 estoque/.env
 faturamento/.env
+backend/.env
 
 # Cache Go
 *.test

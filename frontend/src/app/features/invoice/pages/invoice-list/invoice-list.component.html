@@ -23,7 +23,7 @@
           <mat-label>Produto</mat-label>
           <mat-select [(ngModel)]="novoItem.produto_id">
             <mat-option value="" disabled>Selecione um produto</mat-option>
-            <mat-option *ngFor="let p of produtos" [value]="p.id">
+            <mat-option *ngFor="let p of produtos()" [value]="p.id">
               <span class="select-code">{{ p.codigo }}</span>
               {{ p.descricao }}
               <span class="select-saldo">{{ p.saldo }} un.</span>
@@ -45,9 +45,9 @@
       </div>
 
       <!-- Lista de itens adicionados -->
-      <div *ngIf="itens.length > 0" class="itens-lista">
-        <p class="itens-titulo">Itens na nota ({{ itens.length }})</p>
-        <div class="item-chip" *ngFor="let i of itens; let idx = index">
+      <div *ngIf="itens().length > 0" class="itens-lista">
+        <p class="itens-titulo">Itens na nota ({{ itens().length }})</p>
+        <div class="item-chip" *ngFor="let i of itens(); let idx = index">
           <div class="item-chip-info">
             <span class="item-chip-nome">{{ nomeProduto(i.produto_id) }}</span>
             <span class="item-chip-qty">{{ i.quantidade }} un.</span>
@@ -62,8 +62,8 @@
     </mat-card-content>
 
     <mat-card-actions class="form-actions">
-      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="salvando || itens.length === 0">
-        {{ salvando ? 'Criando...' : 'Criar Nota Fiscal' }}
+      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="salvando() || itens().length === 0">
+        {{ salvando() ? 'Criando...' : 'Criar Nota Fiscal' }}
       </button>
     </mat-card-actions>
   </mat-card>
@@ -79,17 +79,17 @@
         </div>
         <div>
           <mat-card-title>Notas Fiscais</mat-card-title>
-          <p class="card-subtitle">{{ notas.length }} nota{{ notas.length !== 1 ? 's' : '' }} registrada{{ notas.length !== 1 ? 's' : '' }}</p>
+          <p class="card-subtitle">{{ notas().length }} nota{{ notas().length !== 1 ? 's' : '' }} registrada{{ notas().length !== 1 ? 's' : '' }}</p>
         </div>
       </div>
     </mat-card-header>
 
     <mat-card-content class="table-content">
-      <div *ngIf="carregando" class="empty-state">
+      <div *ngIf="carregando()" class="empty-state">
         <p class="empty-text">Carregando notas...</p>
       </div>
 
-      <div *ngIf="!carregando && notas.length === 0" class="empty-state">
+      <div *ngIf="!carregando() && notas().length === 0" class="empty-state">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="empty-icon">
           <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -97,7 +97,7 @@
         <p class="empty-hint">Use o formulário acima para criar a primeira nota</p>
       </div>
 
-      <table *ngIf="!carregando && notas.length > 0" mat-table [dataSource]="notas" class="korp-table">
+      <table *ngIf="!carregando() && notas().length > 0" mat-table [dataSource]="notas()" class="korp-table">
 
         <ng-container matColumnDef="numero">
           <th mat-header-cell *matHeaderCellDef>Número</th>
@@ -131,13 +131,13 @@
               mat-raised-button
               color="accent"
               class="btn-imprimir"
-              [disabled]="imprimindo === n.id"
+              [disabled]="imprimindo() === n.id"
               (click)="imprimir(n.id)">
-              <mat-spinner *ngIf="imprimindo === n.id" diameter="16" style="display:inline-block; margin-right: 6px"></mat-spinner>
-              <svg *ngIf="imprimindo !== n.id" width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:6px">
+              <mat-spinner *ngIf="imprimindo() === n.id" diameter="16" style="display:inline-block; margin-right: 6px"></mat-spinner>
+              <svg *ngIf="imprimindo() !== n.id" width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:6px">
                 <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              {{ imprimindo === n.id ? 'Processando...' : 'Imprimir' }}
+              {{ imprimindo() === n.id ? 'Processando...' : 'Imprimir' }}
             </button>
             <span *ngIf="n.status !== 'Aberta'" class="fechada-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:4px">
