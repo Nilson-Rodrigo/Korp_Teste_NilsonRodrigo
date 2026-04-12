@@ -3,6 +3,9 @@ package repository
 import (
 	"faturamento/config"
 	"faturamento/model"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func ListarNotas() ([]model.NotaFiscal, error) {
@@ -12,11 +15,26 @@ func ListarNotas() ([]model.NotaFiscal, error) {
 }
 
 func CriarNota(n *model.NotaFiscal) error {
+	tx := config.DB.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
 	var ultima model.NotaFiscal
-	config.DB.Order("numero desc").First(&ultima)
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Order("numero desc").First(&ultima).Error; err != nil && err != gorm.ErrRecordNotFound {
+		tx.Rollback()
+		return err
+	}
+
 	n.Numero = ultima.Numero + 1
 	n.Status = "Aberta"
-	return config.DB.Create(n).Error
+
+	if err := tx.Create(n).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func BuscarNotaPorID(id uint) (*model.NotaFiscal, error) {

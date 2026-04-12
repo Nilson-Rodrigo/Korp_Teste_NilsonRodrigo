@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: korp_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 3699
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - korp-network
+
+  # Serviço de Estoque
+  estoque:
+    build:
+      context: ./estoque
+      dockerfile: Dockerfile
+    container_name: korp_estoque
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 3699
+      DB_NAME: estoque
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - korp-network
+
+  # Serviço de Faturamento
+  faturamento:
+    build:
+      context: ./faturamento
+      dockerfile: Dockerfile
+    container_name: korp_faturamento
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: 3699
+      DB_NAME: faturamento
+      ESTOQUE_URL: http://estoque:8080
+      PORT: 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - korp-network
+
+volumes:
+  postgres_data:
+
+networks:
+  korp-network:
+    driver: bridge
