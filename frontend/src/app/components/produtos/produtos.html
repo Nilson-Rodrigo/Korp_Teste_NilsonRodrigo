@@ -1,5 +1,10 @@
 <div class="korp-page">
 
+  <!-- Carregamento inicial -->
+  <div *ngIf="carregando" class="loading-overlay">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
   <!-- Formulário de Cadastro -->
   <mat-card class="form-card">
     <mat-card-header>
@@ -11,35 +16,73 @@
         </div>
         <div>
           <mat-card-title>Cadastrar Produto</mat-card-title>
-          <p class="card-subtitle">Preencha os dados do produto a ser registrado no estoque</p>
+          <p class="card-subtitle">✓ Preencha os dados do produto a ser registrado no estoque</p>
         </div>
       </div>
     </mat-card-header>
 
     <mat-card-content class="form-content">
       <div class="form-row">
-        <mat-form-field appearance="outline" class="field-sm">
-          <mat-label>Código</mat-label>
-          <input matInput [(ngModel)]="novoProduto.codigo" placeholder="Ex: PROD-001" />
-        </mat-form-field>
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="field-sm" [class.error]="errosCampos.codigo">
+            <mat-label>Código *</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="novoProduto.codigo" 
+              (input)="validarCampos()"
+              placeholder="Ex: PROD-001"
+              [disabled]="salvando"
+            />
+          </mat-form-field>
+          <span class="error-text" *ngIf="errosCampos.codigo">{{ errosCampos.codigo }}</span>
+        </div>
 
-        <mat-form-field appearance="outline" class="field-lg">
-          <mat-label>Descrição</mat-label>
-          <input matInput [(ngModel)]="novoProduto.descricao" placeholder="Nome do produto" />
-        </mat-form-field>
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="field-lg" [class.error]="errosCampos.descricao">
+            <mat-label>Descrição *</mat-label>
+            <input 
+              matInput 
+              [(ngModel)]="novoProduto.descricao" 
+              (input)="validarCampos()"
+              placeholder="Nome do produto"
+              [disabled]="salvando"
+            />
+          </mat-form-field>
+          <span class="error-text" *ngIf="errosCampos.descricao">{{ errosCampos.descricao }}</span>
+        </div>
 
-        <mat-form-field appearance="outline" class="field-sm">
-          <mat-label>Saldo em Estoque</mat-label>
-          <input matInput type="number" [(ngModel)]="novoProduto.saldo" min="0" placeholder="0" />
-        </mat-form-field>
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="field-sm" [class.error]="errosCampos.saldo">
+            <mat-label>Saldo *</mat-label>
+            <input 
+              matInput 
+              type="number" 
+              [(ngModel)]="novoProduto.saldo" 
+              (input)="validarCampos()"
+              min="0" 
+              placeholder="0"
+              [disabled]="salvando"
+            />
+          </mat-form-field>
+          <span class="error-text" *ngIf="errosCampos.saldo">{{ errosCampos.saldo }}</span>
+        </div>
       </div>
     </mat-card-content>
 
     <mat-card-actions class="form-actions">
-      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="salvando">
-        <svg *ngIf="!salvando" width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:6px">
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="salvar()" 
+        [disabled]="salvando || !formularioValido"
+        class="btn-cta"
+      >
+        <svg *ngIf="!salvando" width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:8px">
           <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
+        <span *ngIf="salvando" class="loading-spinner">
+          <mat-spinner diameter="16"></mat-spinner>
+        </span>
         {{ salvando ? 'Salvando...' : 'Cadastrar Produto' }}
       </button>
     </mat-card-actions>
