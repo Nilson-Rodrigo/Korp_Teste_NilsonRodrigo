@@ -265,3 +265,36 @@
   color: #22c55e;
   font-weight: 500;
 }
+
+/* ---- Spinner customizado ---- */
+:host ::ng-deep .mat-progress-spinner {
+  display: inline-block !important;
+}
+
+:host ::ng-deep .btn-imprimir mat-spinner circle {
+  stroke: currentColor !important;
+}
+
+@media (max-width: 768px) {
+  .item-row {
+    flex-direction: column;
+  }
+
+  .field-produto,
+  .field-qty {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .btn-add {
+    width: 100%;
+  }
+
+  .korp-table {
+    font-size: 0.85rem;
+  }
+
+  .btn-imprimir {
+    font-size: 0.7rem !important;
+  }
+}

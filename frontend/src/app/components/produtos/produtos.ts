@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
-import { catchError } from 'rxjs/operators';
+import { catchError, finalize, Subject, takeUntil } from 'rxjs';
 import { of } from 'rxjs';
 import { ProdutoService, Produto } from '../../services/produto';
 
@@ -29,13 +29,15 @@ import { ProdutoService, Produto } from '../../services/produto';
   templateUrl: './produtos.html',
   styleUrl: './produtos.css',
 })
-export class Produtos implements OnInit {
+export class Produtos implements OnInit, OnDestroy {
   produtos: Produto[] = [];
   displayedColumns = ['codigo', 'descricao', 'saldo'];
   salvando = false;
   carregando = true;
 
   novoProduto = { codigo: '', descricao: '', saldo: 0 };
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private produtoService: ProdutoService,
@@ -56,11 +58,14 @@ export class Produtos implements OnInit {
             panelClass: 'snack-error',
           });
           return of([]);
-        })
+        }),
+        finalize(() => {
+          this.carregando = false;
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((data) => {
         this.produtos = data;
-        this.carregando = false;
       });
   }
 
@@ -89,9 +94,12 @@ export class Produtos implements OnInit {
             duration: 5000,
             panelClass: 'snack-error',
           });
-          this.salvando = false;
           return of(null);
-        })
+        }),
+        finalize(() => {
+          this.salvando = false;
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((res) => {
         if (res) {
@@ -102,7 +110,11 @@ export class Produtos implements OnInit {
             panelClass: 'snack-success',
           });
         }
-        this.salvando = false;
       });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

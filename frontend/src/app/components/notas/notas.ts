@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
-import { catchError } from 'rxjs/operators';
+import { catchError, finalize, Subject, takeUntil } from 'rxjs';
 import { of } from 'rxjs';
 import { NotaService, NotaFiscal, ItemNota } from '../../services/nota';
 import { ProdutoService, Produto } from '../../services/produto';
@@ -34,7 +34,7 @@ import { ProdutoService, Produto } from '../../services/produto';
   templateUrl: './notas.html',
   styleUrl: './notas.css',
 })
-export class Notas implements OnInit {
+export class Notas implements OnInit, OnDestroy {
   // Dados
   notas: NotaFiscal[] = [];
   produtos: Produto[] = [];
@@ -48,6 +48,9 @@ export class Notas implements OnInit {
   imprimindo: number | null = null;
   salvando = false;
   carregando = true;
+
+  // Cleanup subscriptions
+  private destroy$ = new Subject<void>();
 
   constructor(
     private notaService: NotaService,
@@ -70,7 +73,8 @@ export class Notas implements OnInit {
             panelClass: 'snack-error',
           });
           return of([]);
-        })
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((data) => (this.produtos = data));
   }
@@ -86,7 +90,8 @@ export class Notas implements OnInit {
           });
           this.carregando = false;
           return of([]);
-        })
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((data) => {
         this.notas = data;
@@ -142,7 +147,11 @@ export class Notas implements OnInit {
           });
           this.salvando = false;
           return of(null);
-        })
+        }),
+        finalize(() => {
+          this.salvando = false;
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((res) => {
         if (res) {
@@ -153,7 +162,6 @@ export class Notas implements OnInit {
             panelClass: 'snack-success',
           });
         }
-        this.salvando = false;
       });
   }
 
@@ -169,7 +177,11 @@ export class Notas implements OnInit {
           });
           this.imprimindo = null;
           return of(null);
-        })
+        }),
+        finalize(() => {
+          this.imprimindo = null;
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((res) => {
         if (res !== null) {
@@ -180,7 +192,11 @@ export class Notas implements OnInit {
             panelClass: 'snack-success',
           });
         }
-        this.imprimindo = null;
       });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
