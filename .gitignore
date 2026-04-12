@@ -1,0 +1,38 @@
+# ========================
+# Go — Backend Services
+# ========================
+# Binários compilados
+estoque/estoque
+estoque/estoque.exe
+faturamento/faturamento
+faturamento/faturamento.exe
+
+# Variáveis de ambiente (contêm senhas!)
+estoque/.env
+faturamento/.env
+
+# Cache Go
+*.test
+*.out
+
+# ========================
+# Angular — Frontend
+# ========================
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
+
+# ========================
+# Sistema Operacional
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# IDEs
+# ========================
+.vscode/settings.json
+.idea/
+*.suo
+*.user
