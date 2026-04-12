@@ -1,9 +1,15 @@
 import { Routes } from '@angular/router';
-import { Produtos } from './components/produtos/produtos';
-import { Notas } from './components/notas/notas';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'produtos', pathMatch: 'full' },
-  { path: 'produtos', component: Produtos },
-  { path: 'notas', component: Notas },
+  { path: '', redirectTo: 'estoque', pathMatch: 'full' },
+  {
+    path: 'estoque',
+    loadChildren: () =>
+      import('./features/inventory/inventory.routes').then((m) => m.INVENTORY_ROUTES),
+  },
+  {
+    path: 'faturamento',
+    loadChildren: () =>
+      import('./features/invoice/invoice.routes').then((m) => m.INVOICE_ROUTES),
+  },
 ];

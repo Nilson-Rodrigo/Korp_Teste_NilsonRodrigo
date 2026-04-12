@@ -1,7 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -20,7 +19,6 @@ import { Produto, CriarProdutoInput } from '../../models/inventory.model';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
