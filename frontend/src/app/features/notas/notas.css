@@ -75,6 +75,11 @@ td {
   border-bottom: 1px solid #eee;
 }
 
+.produto-id {
+  color: #666;
+  font-size: 0.85rem;
+}
+
 .nota-row {
   background-color: #fff;
 }
