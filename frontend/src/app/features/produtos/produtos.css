@@ -39,6 +39,11 @@ td {
   border-bottom: 1px solid #eee;
 }
 
+.col-saldo {
+  text-align: right;
+  width: 140px;
+}
+
 .saldo-baixo {
   color: #d32f2f;
   font-weight: bold;

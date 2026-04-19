@@ -17,8 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotaService } from '../../core/api/nota.service';
 import { ProdutoService } from '../../core/api/produto.service';
 import { NotaFiscal, Produto } from '../../core/models';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-notas',
@@ -38,14 +37,12 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class Notas implements OnInit, OnDestroy {
   form: FormGroup;
-  notas: NotaFiscal[] = [];
-  produtos: Produto[] = [];
   displayedColumns = ['numero', 'status', 'acoes'];
-  displayedItensColumns = ['produto_id', 'quantidade', 'acoes'];
-  loading = false;
+  displayedItensColumns = ['produto_id', 'quantidade'];
   salvando = false;
-
-  private destroy$ = new Subject<void>();
+  notas$: Observable<NotaFiscal[]>;
+  produtos$: Observable<Produto[]>;
+  loading$: Observable<boolean>;
 
   constructor(
     private fb: FormBuilder,
@@ -56,17 +53,17 @@ export class Notas implements OnInit, OnDestroy {
     this.form = this.fb.group({
       itens: this.fb.array([], Validators.minLength(1)),
     });
+
+    this.notas$ = this.notaService.notas$;
+    this.produtos$ = this.produtoService.produtos$;
+    this.loading$ = this.notaService.loading$;
   }
 
   ngOnInit(): void {
     this.carregar();
-    this.observarEstados();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  ngOnDestroy(): void {}
 
   /**
    * Carrega notas e produtos
@@ -76,28 +73,6 @@ export class Notas implements OnInit, OnDestroy {
     this.produtoService.carregarProdutos();
   }
 
-  /**
-   * Observa estados do serviço
-   */
-  private observarEstados(): void {
-    this.notaService.loading$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((loading) => {
-        this.loading = loading;
-      });
-
-    this.notaService.notas$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((notas) => {
-        this.notas = notas;
-      });
-
-    this.produtoService.produtos$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((produtos) => {
-        this.produtos = produtos;
-      });
-  }
 
   /**
    * Retorna FormArray de itens
@@ -145,7 +120,6 @@ export class Notas implements OnInit, OnDestroy {
 
     this.notaService
       .criarNota({ itens: this.itens.value })
-      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (nota) => {
           this.form.reset();
@@ -167,7 +141,6 @@ export class Notas implements OnInit, OnDestroy {
   imprimir(id: number): void {
     this.notaService
       .imprimirNota(id)
-      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.snackBar.open('Nota impressa com sucesso!', 'Ok', {
@@ -190,8 +163,8 @@ export class Notas implements OnInit, OnDestroy {
   /**
    * Retorna nome do produto
    */
-  getNomeProduto(produtoId: number): string {
-    const produto = this.produtos.find((p) => p.id === produtoId);
+  getNomeProduto(produtoId: number, produtos: Produto[]): string {
+    const produto = produtos.find((p) => p.id === produtoId);
     return produto ? produto.descricao : `Produto #${produtoId}`;
   }
 

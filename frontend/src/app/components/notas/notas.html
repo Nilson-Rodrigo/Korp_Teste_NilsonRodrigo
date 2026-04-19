@@ -10,7 +10,7 @@
         <div *ngFor="let item of itens.controls; let i = index" class="item-row" [formGroup]="$any(item)">
           <mat-form-field class="item-produto">
             <mat-label>Produto</mat-label>
-            <mat-select formControlName="produto_id">
+            <mat-select formControlName="produto_id" [compareWith]="compareFn">
               <mat-option *ngFor="let p of produtos" [value]="p.id">
                 {{ p.codigo }} - {{ p.descricao }} ({{ p.saldo }})
               </mat-option>
@@ -50,32 +50,23 @@
         <p>Nenhuma nota fiscal</p>
       </div>
 
-      <table mat-table [dataSource]="notas" class="notas-table" *ngIf="!loading && notas.length > 0">
-        <ng-container matColumnDef="numero">
-          <th mat-header-cell *matHeaderCellDef>#</th>
-          <td mat-cell *matCellDef="let n"><strong>{{ n.numero }}</strong></td>
-        </ng-container>
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let n">
+      <div *ngIf="!loading && notas.length > 0" class="notas-list">
+        <mat-card *ngFor="let n of notas" class="nota-card">
+          <mat-card-header>
+            <mat-card-title>Nota #{{ n.numero }}</mat-card-title>
             <mat-chip [color]="n.status === 'Aberta' ? 'primary' : 'accent'" selected>
               {{ n.status }}
             </mat-chip>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef>Ação</th>
-          <td mat-cell *matCellDef="let n">
-            <button *ngIf="n.status === 'Aberta'" mat-mini-fab color="accent" (click)="imprimir(n.id)" [disabled]="imprimindo === n.id">
-              <mat-spinner *ngIf="imprimindo === n.id" diameter="20"></mat-spinner>
-              <mat-icon *ngIf="imprimindo !== n.id">print</mat-icon>
+          </mat-card-header>
+          <mat-card-actions>
+            <button *ngIf="n.status === 'Aberta'" mat-raised-button color="accent" (click)="imprimir(n.id)" [disabled]="imprimindo === n.id">
+              <mat-spinner *ngIf="imprimindo === n.id" diameter="16"></mat-spinner>
+              <span *ngIf="imprimindo !== n.id">Imprimir</span>
             </button>
             <span *ngIf="n.status === 'Fechada'" class="closed">✓ Fechada</span>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="['numero', 'status', 'acoes']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['numero', 'status', 'acoes']"></tr>
-      </table>
+          </mat-card-actions>
+        </mat-card>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

@@ -61,8 +61,8 @@ export class Notas implements OnInit, OnDestroy {
 
   criarItemForm(): FormGroup {
     return this.fb.group({
-      produto_id: ['', Validators.required],
-      quantidade: ['', [Validators.required, Validators.min(1)]],
+      produto_id: [null, [Validators.required]],
+      quantidade: [1, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -102,33 +102,55 @@ export class Notas implements OnInit, OnDestroy {
   }
 
   salvar() {
-    if (this.form.invalid || this.itens.length === 0) return;
+    console.log('DEBUG: Clicou em salvar');
+    console.log('DEBUG: form.invalid =', this.form.invalid);
+    console.log('DEBUG: itens.length =', this.itens.length);
+    
+    if (this.form.invalid || this.itens.length === 0) {
+      console.warn('Formulário inválido ou sem itens');
+      return;
+    }
 
     this.loading = true;
-    // Converter produto_id para número
+    
     const itensTransformados = this.itens.value.map((item: any) => ({
       produto_id: Number(item.produto_id),
       quantidade: Number(item.quantidade),
     }));
 
-    const payload = {
-      itens: itensTransformados,
-    };
+    const payload = { itens: itensTransformados };
 
     this.notaService
       .criar(payload)
       .pipe(takeUntilDestroyed())
       .subscribe({
-        next: () => {
-          this.form.reset({ itens: [] });
-          this.itens.clear();
-          this.carregar();
+        next: (response) => {
+          console.log('DEBUG: Nota criada! Response:', response);
+          
+          // Limpar todos os itens
+          while (this.itens.length > 0) {
+            this.itens.removeAt(0);
+          }
+          
+          // Adicionar um novo item vazio
+          this.adicionarItem();
+          console.log('DEBUG: Item novo adicionado. Itens agora:', this.itens.length);
+          
+          // Atualizar notas SEM usar carregar() que pode resetar o form
+          this.notas.push(response);
+          
+          this.loading = false;
+          console.log('DEBUG: Tudo pronto para criar a próxima nota');
         },
         error: (err) => {
-          console.error('Erro ao criar nota:', err);
+          console.error('DEBUG: Erro:', err);
           this.loading = false;
         },
       });
+  }
+
+  compareFn(c1: any, c2: any): boolean {
+    return c1 && c2 ? c1 === c2 : c1 === c2;
   }
 
   imprimir(id: number) {

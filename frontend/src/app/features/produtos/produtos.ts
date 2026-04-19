@@ -15,8 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProdutoService } from '../../core/api/produto.service';
 import { Produto } from '../../core/models';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-produtos',
@@ -36,12 +35,10 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class Produtos implements OnInit, OnDestroy {
   form: FormGroup;
-  produtos: Produto[] = [];
   displayedColumns = ['id', 'codigo', 'descricao', 'saldo'];
-  loading = false;
   salvando = false;
-
-  private destroy$ = new Subject<void>();
+  produtos$: Observable<Produto[]>;
+  loading$: Observable<boolean>;
 
   constructor(
     private fb: FormBuilder,
@@ -67,40 +64,22 @@ export class Produtos implements OnInit, OnDestroy {
       ],
       saldo: [0, [Validators.required, Validators.min(0), Validators.max(999999)]],
     });
+
+    this.produtos$ = this.produtoService.produtos$;
+    this.loading$ = this.produtoService.loading$;
   }
 
   ngOnInit(): void {
     this.carregar();
-    this.observarLoading();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  ngOnDestroy(): void {}
 
   /**
    * Carrega os produtos
    */
   carregar(): void {
     this.produtoService.carregarProdutos();
-  }
-
-  /**
-   * Observa estado de loading
-   */
-  private observarLoading(): void {
-    this.produtoService.loading$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((loading) => {
-        this.loading = loading;
-      });
-
-    this.produtoService.produtos$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((produtos) => {
-        this.produtos = produtos;
-      });
   }
 
   /**
@@ -118,7 +97,6 @@ export class Produtos implements OnInit, OnDestroy {
 
     this.produtoService
       .criarProduto(this.form.value)
-      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (produto) => {
           this.form.reset();
