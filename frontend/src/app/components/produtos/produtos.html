@@ -24,7 +24,7 @@
       </div>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="loading || form.invalid" class="btn-full">
+      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="loading" class="btn-full">
         <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
         <span *ngIf="!loading">Salvar Produto</span>
       </button>

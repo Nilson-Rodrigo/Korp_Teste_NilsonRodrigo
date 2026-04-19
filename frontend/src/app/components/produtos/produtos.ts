@@ -67,18 +67,26 @@ export class Produtos implements OnInit, OnDestroy {
   }
 
   salvar() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      console.error('Form inválido');
+      return;
+    }
     
     this.loading = true;
+    console.log('Enviando produto:', this.form.value);
+    
     this.produtoService
       .criar(this.form.value)
       .pipe(takeUntilDestroyed())
       .subscribe({
-        next: () => {
+        next: (data) => {
+          console.log('Produto criado com sucesso:', data);
           this.form.reset({ saldo: 0 });
+          this.loading = false;
           this.carregar();
         },
-        error: (_) => {
+        error: (err) => {
+          console.error('Erro ao criar produto:', err);
           this.loading = false;
         },
       });
