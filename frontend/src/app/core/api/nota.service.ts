@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { tap, shareReplay } from 'rxjs/operators';
+import { tap, shareReplay, finalize } from 'rxjs/operators';
 import { NotaFiscal, CriarNotaRequest } from '../models';
 import { NotaApiService } from '../api';
 
@@ -70,6 +70,9 @@ export class NotaService {
           n.id === id ? { ...n, status: 'Fechada' as const } : n
         );
         this.notasSubject.next(notas);
+      }),
+      finalize(() => {
+        // Sempre remove o spinner, mesmo em erro
         this.imprimindoSubject.next(null);
       })
     );
