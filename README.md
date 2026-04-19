@@ -380,6 +380,6 @@ Projeto desenvolvido para fins educacionais como parte do processo seletivo da K
 
 ---
 
-**Desenvolvido por**: [Seu Nome]
+**Desenvolvido por**: Nilson
 **Data**: Abril 2026
 **Versao**: 1.0.0
