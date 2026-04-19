@@ -2,10 +2,6 @@ package main
 
 import (
 	"estoque/config"
-	"estoque/domain/entities"
-	"estoque/domain/usecases"
-	"estoque/infrastructure/http/handlers"
-	"estoque/infrastructure/persistence"
 	"estoque/utils"
 	"os"
 
@@ -25,24 +21,15 @@ func main() {
 
 	// Conectar ao banco de dados
 	config.ConnectDB()
-	config.DB.AutoMigrate(&entities.Produto{})
+	config.DB.AutoMigrate(&Produto{})
 
-	// Inicializar repositório
-	produtoRepo := persistence.NewProdutoRepository(config.DB)
-
-	// Inicializar use cases
-	criarProdutoUC := usecases.NewCriarProdutoUseCase(produtoRepo)
-	listarProdutosUC := usecases.NewListarProdutosUseCase(produtoRepo)
-	buscarProdutoUC := usecases.NewBuscarProdutoPorIDUseCase(produtoRepo)
-	atualizarSaldoUC := usecases.NewAtualizarSaldoUseCase(produtoRepo)
-
-	// Inicializar handlers
-	produtoHandler := handlers.NewProdutoHandler(criarProdutoUC, listarProdutosUC, buscarProdutoUC, atualizarSaldoUC)
+	// Inicializar handler
+	handler := NewHandler(config.DB)
 
 	// Configurar router
 	r := gin.Default()
 
-	// Middleware CORS seguro
+	// Middleware CORS
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:4200")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
@@ -60,10 +47,10 @@ func main() {
 	})
 
 	// Rotas
-	r.GET("/produtos", produtoHandler.Listar)
-	r.POST("/produtos", produtoHandler.Criar)
-	r.GET("/produtos/:id", produtoHandler.BuscarPorID)
-	r.PATCH("/produtos/:id/saldo", produtoHandler.AtualizarSaldo)
+	r.GET("/produtos", handler.Listar)
+	r.POST("/produtos", handler.Criar)
+	r.GET("/produtos/:id", handler.BuscarPorID)
+	r.PATCH("/produtos/:id/saldo", handler.AtualizarSaldo)
 
 	port := os.Getenv("PORT")
 	if port == "" {

@@ -2,11 +2,6 @@ package main
 
 import (
 	"faturamento/config"
-	"faturamento/domain/entities"
-	"faturamento/domain/usecases"
-	"faturamento/infrastructure/http/handlers"
-	"faturamento/infrastructure/persistence"
-	"faturamento/infrastructure/services"
 	"faturamento/utils"
 	"os"
 
@@ -26,7 +21,7 @@ func main() {
 
 	// Conectar ao banco de dados
 	config.ConnectDB()
-	config.DB.AutoMigrate(&entities.NotaFiscal{}, &entities.ItemNota{})
+	config.DB.AutoMigrate(&NotaFiscal{}, &ItemNota{})
 
 	// Configurar URL do estoque
 	estoqueURL := os.Getenv("ESTOQUE_URL")
@@ -34,25 +29,13 @@ func main() {
 		estoqueURL = "http://localhost:8080"
 	}
 
-	// Inicializar repositórios
-	notaRepo := persistence.NewNotaFiscalRepository(config.DB)
-
-	// Inicializar serviços
-	estoqueService := services.NewEstoqueService(estoqueURL)
-
-	// Inicializar use cases
-	criarNotaUC := usecases.NewCriarNotaUseCase(notaRepo, estoqueService)
-	listarNotasUC := usecases.NewListarNotasUseCase(notaRepo)
-	buscarNotaUC := usecases.NewBuscarNotaPorIDUseCase(notaRepo)
-	imprimirNotaUC := usecases.NewImprimirNotaUseCase(notaRepo, estoqueService, config.DB)
-
-	// Inicializar handlers
-	notaHandler := handlers.NewNotaFiscalHandler(criarNotaUC, listarNotasUC, buscarNotaUC, imprimirNotaUC)
+	// Inicializar handler
+	handler := NewHandler(config.DB, estoqueURL)
 
 	// Configurar router
 	r := gin.Default()
 
-	// Middleware CORS seguro
+	// Middleware CORS
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:4200")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
@@ -70,10 +53,10 @@ func main() {
 	})
 
 	// Rotas
-	r.GET("/notas", notaHandler.Listar)
-	r.POST("/notas", notaHandler.Criar)
-	r.GET("/notas/:id", notaHandler.BuscarPorID)
-	r.POST("/notas/:id/imprimir", notaHandler.Imprimir)
+	r.GET("/notas", handler.Listar)
+	r.POST("/notas", handler.Criar)
+	r.GET("/notas/:id", handler.BuscarPorID)
+	r.POST("/notas/:id/imprimir", handler.Imprimir)
 
 	port := os.Getenv("PORT")
 	if port == "" {
