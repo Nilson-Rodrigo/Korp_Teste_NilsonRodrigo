@@ -1,6 +1,6 @@
 # Korp Teste - Sistema de Emissão de Notas Fiscais
 
-Sistema completo de emissão de notas fiscais com arquitetura de microsserviços, desenvolvido com **Go**, **Angular**, **PostgreSQL** e **Docker**. Implementa **Clean Architecture** em todas as camadas.
+Sistema de emissão de notas fiscais com arquitetura de microsserviços, desenvolvido com **Go**, **Angular**, **PostgreSQL** e **Docker**.
 
 ## 🏗️ Arquitetura
 
@@ -29,23 +29,14 @@ Sistema completo de emissão de notas fiscais com arquitetura de microsserviços
 
 ## 📁 Estrutura do Projeto
 
-### Backend - Clean Architecture
+### Backend
 
 ```
 estoque/
-├── domain/                    # Camada de Domínio (sem dependências)
-│   ├── entities/             #  Entidades de negócio
-│   ├── repositories/         # Interfaces abstratas
-│   ├── usecases/            # Lógica de negócio
-│   └── errors.go            # Erros de domínio
-├── infrastructure/           # Camada de Infraestrutura
-│   ├── persistence/         # Implementação de repositórios
-│   ├── http/
-│   │   ├── handlers/        # Handlers HTTP
-│   │   └── dto/             # Data Transfer Objects
-│   └── services/            # Integração com outros serviços
-├── utils/                    # Utilitários (Logger, Errors)
-├── config/                   # Configuração (BD, etc)
+├── config/                   # Configuração do banco
+├── utils/                    # Logger e erros
+├── handler.go                # Handlers HTTP
+├── models.go                 # Modelos GORM
 └── main.go                   # Entry point
 ```
 
@@ -204,55 +195,11 @@ npm start
   - Migrações automáticas
   - Transações nas operações críticas
 
-### 🎁 Opcionais Implementados
+## 🎁 Opcionais
 
-- [x] **Tratamento de Concorrência**
-  - Transações database com lock
-  - Validação de saldos antes de atualização
-
-- [x] **Observabilidade**
-  - Logging estruturado com zerolog
-  - Health checks
-  - Tratamento de erro padronizado
-
-## 🏛️ Clean Architecture
-
-### Princípios Implementados
-
-1. **Independência de Frameworks**
-   - A lógica de negócio não depende de Gin, GORM ou Angular Material
-   - Fácil de testar e reutilizar
-
-2. **Independência de Interface de Usuário**
-   - Frontend e backend são separados
-   - Mudança na UI não afeta a lógica
-
-3. **Independência de Banco de Dados**
-   - Repositórios abstratos
-   - Fácil trocar PostgreSQL por outro BD
-
-4. **Independência de Agentes Externos**
-   - Serviços abstratos
-   - Fácil mockar em testes
-
-### Camadas
-
-#### Domain (Núcleo)
-- **Entities**: `Produto`, `NotaFiscal`, `ItemNota`
-- **Use Cases**: `CriarProduto`, `ListarProdutos`, `ImprimirNota`, etc
-- **Interfaces**: `ProdutoRepository`, `EstoqueService`
-- **Erros de Domínio**: Mensagens de erro de negócio
-
-#### Application (Infra)
-- **Repositories Impl**: `ProdutoRepositoryImpl`, `NotaFiscalRepositoryImpl`
-- **HTTP Handlers**: `ProdutoHandler`, `NotaFiscalHandler`
-- **DTOs**: `CriarProdutoRequest`, `NotaFiscalResponse`
-- **Services**: `EstoqueServiceImpl`
-
-#### Interface External (Apresentação)
-- **HTTP Routers**: Configuração de rotas
-- **Main**: Inicialização da aplicação
-- **Config**: Configurações de ambiente
+- [ ] Tratamento de concorrencia
+- [ ] Idempotencia
+- [ ] Uso de IA
 
 ## 🔒 Segurança
 
@@ -427,50 +374,12 @@ lsof -i :8080
 # Libere a porta ou use outra em docker-compose.yml
 ```
 
-## 📞 Suporte
-
-Para dúvidas sobre a implementação, consulte:
-- [CHECKLIST_PROFISSIONALISMO.md](./CHECKLIST_PROFISSIONALISMO.md)
-- [IMPLEMENTACAO_PRATICA.md](./IMPLEMENTACAO_PRATICA.md)
-- [TOP_10_PRIORIDADES.md](./TOP_10_PRIORIDADES.md)
-
-## 📄 Licença
+## 📄 Licenca
 
 Projeto desenvolvido para fins educacionais como parte do processo seletivo da Korp ERP.
 
 ---
 
-**Desenvolvido por**: [Seu Nome]  
-**Data**: Abril 2026  
-**Versão**: 1.0.0
-
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-A aplicação Angular será servida em `http://localhost:4200`.
-
-## Configuração de ambiente
-
-- `frontend/src/environments/environment.ts` define as URLs das APIs.
-- `estoque/.env.example` e `faturamento/.env.example` aceitam `DB_DSN` ou variáveis separadas.
-
-## Notas técnicas
-
-- Angular: uso de `OnInit` nos componentes para carregar dados inicialmente.
-- RxJS: `HttpClient` com `Observable`, `pipe` e `catchError` para tratamento de falhas.
-- UI: `@angular/material` para tabelas, formulários, botões e notificações.
-- Go: `gin-gonic/gin` para rotas HTTP e `gorm.io/gorm` para persistência PostgreSQL.
-- Cada microsserviço tem seu próprio `go.mod` e dependências isoladas.
-
-## Próximos incrementos recomendados
-
-- Adicionar tratamento de concorrência para o saldo de produtos.
-- Implementar idempotência na impressão de notas fiscais.
-- Criar testes automatizados de integração entre os microsserviços.
-- Melhorar a experiência de falha com retry e fallback no frontend.
+**Desenvolvido por**: [Seu Nome]
+**Data**: Abril 2026
+**Versao**: 1.0.0
