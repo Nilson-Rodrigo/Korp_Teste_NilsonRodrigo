@@ -7,7 +7,7 @@ services:
     container_name: korp_postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 3699
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     ports:
       - "5432:5432"

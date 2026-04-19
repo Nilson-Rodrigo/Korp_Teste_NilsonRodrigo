@@ -8,6 +8,8 @@ faturamento/faturamento
 faturamento/faturamento.exe
 
 # Variáveis de ambiente (contêm senhas!)
+.env
+.env.local
 estoque/.env
 faturamento/.env
 
