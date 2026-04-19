@@ -1,8 +1,8 @@
 -- Create estoque database
-CREATE DATABASE IF NOT EXISTS estoque;
+CREATE DATABASE estoque;
 
--- Create faturamento database
-CREATE DATABASE IF NOT EXISTS faturamento;
+-- Create faturamento database  
+CREATE DATABASE faturamento;
 
 -- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE estoque TO postgres;

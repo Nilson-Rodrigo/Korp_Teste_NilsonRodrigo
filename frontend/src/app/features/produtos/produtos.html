@@ -1,0 +1,121 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>Cadastro de Produtos</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="form" class="form-container">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Código do Produto</mat-label>
+        <input
+          matInput
+          formControlName="codigo"
+          placeholder="Ex: PROD001"
+          type="text"
+        />
+        <mat-error *ngIf="temErro('codigo', 'required')">
+          Código é obrigatório
+        </mat-error>
+        <mat-error *ngIf="temErro('codigo', 'minlength')">
+          Mínimo 1 caractere
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descrição do Produto</mat-label>
+        <input
+          matInput
+          formControlName="descricao"
+          placeholder="Ex: Notebook Dell"
+          type="text"
+        />
+        <mat-error *ngIf="temErro('descricao', 'required')">
+          Descrição é obrigatória
+        </mat-error>
+        <mat-error *ngIf="temErro('descricao', 'minlength')">
+          Mínimo 3 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Saldo (Quantidade em Estoque)</mat-label>
+        <input
+          matInput
+          formControlName="saldo"
+          type="number"
+          placeholder="Ex: 10"
+          min="0"
+        />
+        <mat-error *ngIf="temErro('saldo', 'required')">
+          Saldo é obrigatório
+        </mat-error>
+        <mat-error *ngIf="temErro('saldo', 'min')">
+          Saldo não pode ser negativo
+        </mat-error>
+      </mat-form-field>
+
+      <div class="button-group">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="salvar()"
+          [disabled]="salvando || form.invalid || loading"
+          class="full-width"
+        >
+          <span *ngIf="!salvando">Criar Produto</span>
+          <mat-spinner *ngIf="salvando" diameter="20" class="spinner-button"></mat-spinner>
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="table-card" *ngIf="produtos.length > 0 || loading">
+  <mat-card-header>
+    <mat-card-title>Produtos Cadastrados</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Carregando produtos...</p>
+    </div>
+
+    <div *ngIf="!loading && produtos.length > 0" class="table-responsive">
+      <table mat-table [dataSource]="produtos" class="full-width">
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+        </ng-container>
+
+        <!-- Código Column -->
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef>Código</th>
+          <td mat-cell *matCellDef="let element">{{ element.codigo }}</td>
+        </ng-container>
+
+        <!-- Descrição Column -->
+        <ng-container matColumnDef="descricao">
+          <th mat-header-cell *matHeaderCellDef>Descrição</th>
+          <td mat-cell *matCellDef="let element">{{ element.descricao }}</td>
+        </ng-container>
+
+        <!-- Saldo Column -->
+        <ng-container matColumnDef="saldo">
+          <th mat-header-cell *matHeaderCellDef>Saldo</th>
+          <td mat-cell *matCellDef="let element">
+            <span [ngClass]="{ 'saldo-baixo': element.saldo < 5 }">
+              {{ element.saldo | number: '1.0-2' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && produtos.length === 0" class="empty-state">
+      <p>Nenhum produto cadastrado. Crie o primeiro produto acima!</p>
+    </div>
+  </mat-card-content>
+</mat-card>

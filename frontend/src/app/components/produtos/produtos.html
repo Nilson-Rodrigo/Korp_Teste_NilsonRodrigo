@@ -1,146 +1,68 @@
-<div class="korp-page">
-
-  <!-- Carregamento inicial -->
-  <div *ngIf="carregando" class="loading-overlay">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
-
-  <!-- Formulário de Cadastro -->
-  <mat-card class="form-card">
+<div class="produtos-container">
+  <!-- Cadastro -->
+  <mat-card class="card-form">
     <mat-card-header>
-      <div class="card-header-content">
-        <div class="card-icon blue">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <mat-card-title>Cadastrar Produto</mat-card-title>
-          <p class="card-subtitle">✓ Preencha os dados do produto a ser registrado no estoque</p>
-        </div>
-      </div>
+      <mat-card-title>Cadastrar Novo Produto</mat-card-title>
     </mat-card-header>
-
-    <mat-card-content class="form-content">
-      <div class="form-row">
-        <div class="form-group">
-          <mat-form-field appearance="outline" class="field-sm" [class.error]="errosCampos.codigo">
-            <mat-label>Código *</mat-label>
-            <input 
-              matInput 
-              [(ngModel)]="novoProduto.codigo" 
-              (input)="validarCampos()"
-              placeholder="Ex: PROD-001"
-              [disabled]="salvando"
-            />
-          </mat-form-field>
-          <span class="error-text" *ngIf="errosCampos.codigo">{{ errosCampos.codigo }}</span>
-        </div>
-
-        <div class="form-group">
-          <mat-form-field appearance="outline" class="field-lg" [class.error]="errosCampos.descricao">
-            <mat-label>Descrição *</mat-label>
-            <input 
-              matInput 
-              [(ngModel)]="novoProduto.descricao" 
-              (input)="validarCampos()"
-              placeholder="Nome do produto"
-              [disabled]="salvando"
-            />
-          </mat-form-field>
-          <span class="error-text" *ngIf="errosCampos.descricao">{{ errosCampos.descricao }}</span>
-        </div>
-
-        <div class="form-group">
-          <mat-form-field appearance="outline" class="field-sm" [class.error]="errosCampos.saldo">
-            <mat-label>Saldo *</mat-label>
-            <input 
-              matInput 
-              type="number" 
-              [(ngModel)]="novoProduto.saldo" 
-              (input)="validarCampos()"
-              min="0" 
-              placeholder="0"
-              [disabled]="salvando"
-            />
-          </mat-form-field>
-          <span class="error-text" *ngIf="errosCampos.saldo">{{ errosCampos.saldo }}</span>
-        </div>
+    <mat-card-content [formGroup]="form">
+      <div class="form-grid">
+        <mat-form-field class="full-width">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" />
+          <mat-error *ngIf="temErro('codigo')">{{ getMensagemErro('codigo') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Descrição</mat-label>
+          <input matInput formControlName="descricao" />
+          <mat-error *ngIf="temErro('descricao')">{{ getMensagemErro('descricao') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Saldo</mat-label>
+          <input matInput type="number" formControlName="saldo" />
+          <mat-error *ngIf="temErro('saldo')">{{ getMensagemErro('saldo') }}</mat-error>
+        </mat-form-field>
       </div>
     </mat-card-content>
-
-    <mat-card-actions class="form-actions">
-      <button 
-        mat-raised-button 
-        color="primary" 
-        (click)="salvar()" 
-        [disabled]="salvando || !formularioValido"
-        class="btn-cta"
-      >
-        <svg *ngIf="!salvando" width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right:8px">
-          <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span *ngIf="salvando" class="loading-spinner">
-          <mat-spinner diameter="16"></mat-spinner>
-        </span>
-        {{ salvando ? 'Salvando...' : 'Cadastrar Produto' }}
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="salvar()" [disabled]="loading || form.invalid" class="btn-full">
+        <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+        <span *ngIf="!loading">Salvar Produto</span>
       </button>
     </mat-card-actions>
   </mat-card>
 
-  <!-- Lista de Produtos -->
-  <mat-card class="table-card">
+  <!-- Lista -->
+  <mat-card class="card-list">
     <mat-card-header>
-      <div class="card-header-content">
-        <div class="card-icon slate">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div>
-          <mat-card-title>Produtos Cadastrados</mat-card-title>
-          <p class="card-subtitle">{{ produtos.length }} produto{{ produtos.length !== 1 ? 's' : '' }} no estoque</p>
-        </div>
-      </div>
+      <mat-card-title>Produtos Cadastrados ({{ produtos.length }})</mat-card-title>
     </mat-card-header>
-
-    <mat-card-content class="table-content">
-      <div *ngIf="carregando" class="empty-state">
-        <p class="empty-text">Carregando produtos...</p>
+    <mat-card-content>
+      <mat-spinner *ngIf="loading" diameter="30"></mat-spinner>
+      
+      <div *ngIf="!loading && produtos.length === 0" class="empty">
+        <mat-icon>inventory_2</mat-icon>
+        <p>Nenhum produto cadastrado</p>
       </div>
 
-      <div *ngIf="!carregando && produtos.length === 0" class="empty-state">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="empty-icon">
-          <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <p class="empty-text">Nenhum produto cadastrado ainda</p>
-        <p class="empty-hint">Use o formulário acima para adicionar produtos ao estoque</p>
-      </div>
-
-      <table *ngIf="!carregando && produtos.length > 0" mat-table [dataSource]="produtos" class="korp-table">
+      <table mat-table [dataSource]="produtos" class="produtos-table" *ngIf="!loading && produtos.length > 0">
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let p">{{ p.id }}</td>
+        </ng-container>
         <ng-container matColumnDef="codigo">
           <th mat-header-cell *matHeaderCellDef>Código</th>
-          <td mat-cell *matCellDef="let p">
-            <span class="code-chip">{{ p.codigo }}</span>
-          </td>
+          <td mat-cell *matCellDef="let p"><strong>{{ p.codigo }}</strong></td>
         </ng-container>
-
         <ng-container matColumnDef="descricao">
           <th mat-header-cell *matHeaderCellDef>Descrição</th>
-          <td mat-cell *matCellDef="let p">
-            <span class="product-name">{{ p.descricao }}</span>
-          </td>
+          <td mat-cell *matCellDef="let p">{{ p.descricao }}</td>
         </ng-container>
-
         <ng-container matColumnDef="saldo">
-          <th mat-header-cell *matHeaderCellDef style="text-align:right">Saldo</th>
-          <td mat-cell *matCellDef="let p" style="text-align:right">
-            <span class="saldo-badge" [class.low]="p.saldo <= 5">
-              {{ p.saldo | number:'1.0-2' }} un.
-            </span>
+          <th mat-header-cell *matHeaderCellDef>Saldo</th>
+          <td mat-cell *matCellDef="let p">
+            <mat-chip [color]="p.saldo > 0 ? 'primary' : 'accent'">{{ p.saldo }}</mat-chip>
           </td>
         </ng-container>
-
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
